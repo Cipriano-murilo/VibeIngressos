@@ -1,0 +1,21 @@
+# Node
+node_modules/
+dist/
+.env
+.env.local
+
+# .NET / C#
+bin/
+obj/
+*.user
+*.suo
+*.userosscache
+*.sln.docstates
+appsettings.Development.json
+appsettings.json
+
+# VS Code
+.vscode/
+
+# MacOS
+.DS_Store

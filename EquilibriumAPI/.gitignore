@@ -1,0 +1,14 @@
+# Configuração sensível — NÃO comitar no Git!
+appsettings.Development.json
+
+# Build outputs
+bin/
+obj/
+
+# Visual Studio
+.vs/
+*.user
+*.suo
+
+# Logs
+*.log
