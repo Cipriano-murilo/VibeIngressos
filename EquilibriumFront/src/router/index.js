@@ -1,5 +1,6 @@
 import { createRouter, createWebHistory } from 'vue-router'
 import { useAuthStore } from '../stores/authStore.js'
+import { TokenManager } from '../services/TokenManager.js'
 
 const routes = [
   // Rotas públicas
@@ -7,31 +8,31 @@ const routes = [
     path: '/',
     name: 'Home',
     component: () => import('../views/public/HomeView.vue'),
-    meta: { title: 'Equilibrium — Sua Bilheteria Digital' }
+    meta: { title: 'VibeIngressos — Sua Bilheteria Digital' }
   },
   {
     path: '/login',
     name: 'Login',
     component: () => import('../views/public/LoginView.vue'),
-    meta: { title: 'Login — Equilibrium', guest: true }
+    meta: { title: 'Entrar — VibeIngressos', guest: true }
   },
   {
     path: '/cadastro',
     name: 'Cadastro',
     component: () => import('../views/public/CadastroView.vue'),
-    meta: { title: 'Criar Conta — Equilibrium', guest: true }
+    meta: { title: 'Criar Conta — VibeIngressos', guest: true }
   },
   {
     path: '/esqueci-senha',
     name: 'EsqueciSenha',
     component: () => import('../views/public/EsqueciSenhaView.vue'),
-    meta: { title: 'Recuperar Senha — Equilibrium', guest: true }
+    meta: { title: 'Recuperar Senha — VibeIngressos', guest: true }
   },
   {
     path: '/evento/:id',
     name: 'EventoDetail',
     component: () => import('../views/public/EventoDetailView.vue'),
-    meta: { title: 'Evento — Equilibrium' }
+    meta: { title: 'Evento — VibeIngressos' }
   },
 
   // Rotas Admin (requer auth + role admin)
@@ -83,26 +84,25 @@ const router = createRouter({
   }
 })
 
-// Navigation Guard
+// Navigation Guard com verificação de token
 router.beforeEach((to, from, next) => {
-  // Update page title
-  if (to.meta.title) {
-    document.title = to.meta.title
-  }
+  if (to.meta.title) document.title = to.meta.title
 
   const authStore = useAuthStore()
 
-  // Rota requer autenticação
-  if (to.meta.requiresAuth && !authStore.isAuthenticated) {
-    return next({ name: 'Login' })
+  // Se a rota exige auth, valida o token localmente antes de qualquer redirect
+  if (to.meta.requiresAuth) {
+    if (!TokenManager.isValid()) {
+      TokenManager.clear()
+      return next({ name: 'Login' })
+    }
+    if (!authStore.isAuthenticated) return next({ name: 'Login' })
   }
 
-  // Rota requer admin
   if (to.meta.requiresAdmin && !authStore.isAdmin) {
     return next({ name: 'Home' })
   }
 
-  // Rota apenas para guests (login/cadastro) - redireciona se já logado
   if (to.meta.guest && authStore.isAuthenticated) {
     return next(authStore.isAdmin ? { name: 'AdminDashboard' } : { name: 'Home' })
   }

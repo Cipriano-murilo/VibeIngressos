@@ -14,7 +14,7 @@
               </linearGradient>
             </defs>
           </svg>
-          <span class="logo-text">Equilibrium</span>
+          <span class="logo-text">VibeIngressos</span>
         </router-link>
         <p class="footer-tagline">Sua bilheteria digital. Viva momentos inesquecíveis.</p>
       </div>
@@ -34,7 +34,7 @@
         </div>
         <div class="footer-col">
           <h4>Contato</h4>
-          <a href="#">contato@equilibrium.com.br</a>
+          <a href="#">contato@vibeingressos.com.br</a>
           <a href="#">(11) 4000-0000</a>
         </div>
       </div>
@@ -42,7 +42,7 @@
 
     <div class="footer-bottom">
       <div class="container">
-        <p>© {{ year }} Equilibrium. Todos os direitos reservados.</p>
+        <p>© {{ year }} VibeIngressos. Todos os direitos reservados.</p>
         <p class="footer-made">Feito com ❤️ no Brasil</p>
       </div>
     </div>

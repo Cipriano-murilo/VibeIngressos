@@ -14,7 +14,7 @@
             </linearGradient>
           </defs>
         </svg>
-        <span class="logo-text">Equilibrium</span>
+        <span class="logo-text">VibeIngressos</span>
       </router-link>
 
       <!-- Navigation (desktop) -->

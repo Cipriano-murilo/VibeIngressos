@@ -2,7 +2,8 @@
 node_modules/
 dist/
 .env
-.env.local
+.env.*
+!.env.example
 
 # .NET / C#
 bin/
@@ -14,8 +15,32 @@ obj/
 appsettings.Development.json
 appsettings.json
 
-# VS Code
-.vscode/
+# Segurança e Chaves (Cybersec)
+*.pem
+*.key
+*.pfx
+*.p12
+*.cert
+*.crt
+*.rsa
+id_rsa
+id_rsa.pub
+secret*.txt
 
-# MacOS
+# Logs e Dados
+*.log
+npm-debug.log*
+yarn-debug.log*
+yarn-error.log*
+logs/
+*.sqlite
+*.db
+
+# VS Code e IDEs
+.vscode/
+.idea/
+*.swp
+
+# Sistema Operacional
 .DS_Store
+Thumbs.db
