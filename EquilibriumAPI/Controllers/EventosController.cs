@@ -1,7 +1,7 @@
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
 using EquilibriumAPI.DTOs;
-using EquilibriumAPI.Services;
+using EquilibriumAPI.Services.Interfaces;
 
 namespace EquilibriumAPI.Controllers
 {
@@ -9,9 +9,9 @@ namespace EquilibriumAPI.Controllers
     [Route("api/eventos")]
     public class EventosController : ControllerBase
     {
-        private readonly EventosService _eventosService;
+        private readonly IEventosService _eventosService;
 
-        public EventosController(EventosService eventosService) => _eventosService = eventosService;
+        public EventosController(IEventosService eventosService) => _eventosService = eventosService;
 
         /// <summary>Lista todos os eventos (público). Filtra por categoria via ?categoria=Shows</summary>
         [HttpGet]

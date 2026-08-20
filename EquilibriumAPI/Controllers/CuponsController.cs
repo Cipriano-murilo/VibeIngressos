@@ -1,7 +1,7 @@
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
 using EquilibriumAPI.DTOs;
-using EquilibriumAPI.Services;
+using EquilibriumAPI.Services.Interfaces;
 
 namespace EquilibriumAPI.Controllers
 {
@@ -9,9 +9,9 @@ namespace EquilibriumAPI.Controllers
     [Route("api/cupons")]
     public class CuponsController : ControllerBase
     {
-        private readonly CuponsService _cuponsService;
+        private readonly ICuponsService _cuponsService;
 
-        public CuponsController(CuponsService cuponsService) => _cuponsService = cuponsService;
+        public CuponsController(ICuponsService cuponsService) => _cuponsService = cuponsService;
 
         /// <summary>Lista todos os cupons (somente admin)</summary>
         [HttpGet]

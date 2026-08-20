@@ -5,6 +5,10 @@ using Microsoft.EntityFrameworkCore;
 using Microsoft.IdentityModel.Tokens;
 using EquilibriumAPI.Data;
 using EquilibriumAPI.Services;
+using EquilibriumAPI.Services.Interfaces;
+using EquilibriumAPI.Middleware;
+using Microsoft.AspNetCore.RateLimiting;
+using System.Threading.RateLimiting;
 
 var builder = WebApplication.CreateBuilder(args);
 
@@ -47,11 +51,23 @@ builder.Services.AddCors(options =>
               .AllowAnyMethod());
 });
 
-// ── Services (Injeção de Dependência) ────────────────────────────────────────
-builder.Services.AddScoped<AuthService>();
-builder.Services.AddScoped<EventosService>();
-builder.Services.AddScoped<CuponsService>();
-builder.Services.AddScoped<PedidosService>();
+// ── Services (Injeção de Dependência via Interfaces - OOP) ───────────────────
+builder.Services.AddScoped<IAuthService, AuthService>();
+builder.Services.AddScoped<IEventosService, EventosService>();
+builder.Services.AddScoped<ICuponsService, CuponsService>();
+builder.Services.AddScoped<IPedidosService, PedidosService>();
+
+// ── Rate Limiting (Proteção contra Força Bruta/DDoS) ─────────────────────────
+builder.Services.AddRateLimiter(options =>
+{
+    options.AddFixedWindowLimiter("Global", opt =>
+    {
+        opt.Window = TimeSpan.FromMinutes(1);
+        opt.PermitLimit = 60; // Máximo 60 requests por minuto por IP
+        opt.QueueLimit = 2;
+        opt.QueueProcessingOrder = QueueProcessingOrder.OldestFirst;
+    });
+});
 
 // ── Controllers + OpenAPI ────────────────────────────────────────────────────
 builder.Services.AddControllers()
@@ -62,14 +78,21 @@ builder.Services.AddOpenApi();
 // ── Build ─────────────────────────────────────────────────────────────────────
 var app = builder.Build();
 
-// ── Middleware Pipeline ───────────────────────────────────────────────────────
+// ── Middlewares de Segurança ──────────────────────────────────────────────────
+app.UseMiddleware<GlobalExceptionHandlerMiddleware>();
+app.UseMiddleware<SecurityHeadersMiddleware>();
+
 if (app.Environment.IsDevelopment())
 {
-    app.MapOpenApi(); // Acesse o JSON em /openapi/v1.json
+    app.MapOpenApi();
+}
+else
+{
+    // Força HTTPS em produção
+    app.UseHttpsRedirection();
 }
 
-
-
+app.UseRateLimiter();
 app.UseCors("FrontEnd");
 app.UseAuthentication();
 app.UseAuthorization();

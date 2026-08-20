@@ -7,9 +7,11 @@ using EquilibriumAPI.Data;
 using EquilibriumAPI.DTOs;
 using EquilibriumAPI.Models;
 
+using EquilibriumAPI.Services.Interfaces;
+
 namespace EquilibriumAPI.Services
 {
-    public class EventosService
+    public class EventosService : IEventosService
     {
         private readonly AppDbContext _db;
 

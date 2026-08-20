@@ -1,6 +1,6 @@
 using Microsoft.AspNetCore.Mvc;
 using EquilibriumAPI.DTOs;
-using EquilibriumAPI.Services;
+using EquilibriumAPI.Services.Interfaces;
 
 namespace EquilibriumAPI.Controllers
 {
@@ -8,9 +8,12 @@ namespace EquilibriumAPI.Controllers
     [Route("api/auth")]
     public class AuthController : ControllerBase
     {
-        private readonly AuthService _authService;
+        private readonly IAuthService _authService;
 
-        public AuthController(AuthService authService) => _authService = authService;
+        public AuthController(IAuthService authService)
+        {
+            _authService = authService;
+        }
 
         /// <summary>Realiza login e retorna o token JWT</summary>
         [HttpPost("login")]

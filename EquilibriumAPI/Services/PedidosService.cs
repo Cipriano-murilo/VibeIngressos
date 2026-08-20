@@ -7,14 +7,16 @@ using EquilibriumAPI.Data;
 using EquilibriumAPI.DTOs;
 using EquilibriumAPI.Models;
 
+using EquilibriumAPI.Services.Interfaces;
+
 namespace EquilibriumAPI.Services
 {
-    public class PedidosService
+    public class PedidosService : IPedidosService
     {
         private readonly AppDbContext _db;
-        private readonly CuponsService _cuponsService;
+        private readonly ICuponsService _cuponsService;
 
-        public PedidosService(AppDbContext db, CuponsService cuponsService)
+        public PedidosService(AppDbContext db, ICuponsService cuponsService)
         {
             _db = db;
             _cuponsService = cuponsService;

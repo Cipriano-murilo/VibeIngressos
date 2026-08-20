@@ -2,7 +2,7 @@ using System.Security.Claims;
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
 using EquilibriumAPI.DTOs;
-using EquilibriumAPI.Services;
+using EquilibriumAPI.Services.Interfaces;
 
 namespace EquilibriumAPI.Controllers
 {
@@ -11,9 +11,9 @@ namespace EquilibriumAPI.Controllers
     [Authorize]
     public class PedidosController : ControllerBase
     {
-        private readonly PedidosService _pedidosService;
+        private readonly IPedidosService _pedidosService;
 
-        public PedidosController(PedidosService pedidosService) => _pedidosService = pedidosService;
+        public PedidosController(IPedidosService pedidosService) => _pedidosService = pedidosService;
 
         /// <summary>Lista os pedidos do usuário autenticado</summary>
         [HttpGet]

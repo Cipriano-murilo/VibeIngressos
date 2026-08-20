@@ -11,9 +11,11 @@ using EquilibriumAPI.DTOs;
 using EquilibriumAPI.Models;
 using System.Collections.Generic;
 
+using EquilibriumAPI.Services.Interfaces;
+
 namespace EquilibriumAPI.Services
 {
-    public class AuthService
+    public class AuthService : IAuthService
     {
         private readonly AppDbContext _db;
         private readonly IConfiguration _config;
