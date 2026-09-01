@@ -56,6 +56,7 @@ builder.Services.AddScoped<IAuthService, AuthService>();
 builder.Services.AddScoped<IEventosService, EventosService>();
 builder.Services.AddScoped<ICuponsService, CuponsService>();
 builder.Services.AddScoped<IPedidosService, PedidosService>();
+builder.Services.AddScoped<IClientesService, ClientesService>();
 
 // ── Rate Limiting (Proteção contra Força Bruta/DDoS) ─────────────────────────
 builder.Services.AddRateLimiter(options =>

@@ -1,12 +1,10 @@
 using System;
-using System.Linq;
 using System.Security.Claims;
 using System.Threading.Tasks;
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
-using EquilibriumAPI.Data;
 using EquilibriumAPI.DTOs;
-using EquilibriumAPI.Services;
+using EquilibriumAPI.Services.Interfaces;
 
 namespace EquilibriumAPI.Controllers
 {
@@ -15,105 +13,75 @@ namespace EquilibriumAPI.Controllers
     [Authorize]
     public class ClientesController : ControllerBase
     {
-        private readonly AppDbContext _db;
+        private readonly IClientesService _clientesService;
 
-        public ClientesController(AppDbContext db)
+        public ClientesController(IClientesService clientesService)
         {
-            _db = db;
+            _clientesService = clientesService;
         }
 
-        /// <summary>Lista todos os clientes (somente admin)</summary>
         [HttpGet]
         [Authorize(Roles = "admin")]
         public IActionResult Listar([FromQuery] string? busca = null)
         {
-            var query = _db.Usuarios.AsQueryable();
-
-            if (!string.IsNullOrWhiteSpace(busca))
-            {
-                var b = busca.ToLower();
-                query = query.Where(u =>
-                    u.Nome.ToLower().Contains(b) ||
-                    u.Email.ToLower().Contains(b) ||
-                    (u.Cpf != null && u.Cpf.Contains(b)));
-            }
-
-            var result = query
-                .OrderByDescending(u => u.CriadoEm)
-                .Select(u => AuthService.MapearUsuario(u))
-                .ToList();
-
+            var result = _clientesService.Listar(busca);
             return Ok(result);
         }
 
-        /// <summary>Busca cliente por ID (admin ou o próprio usuário)</summary>
         [HttpGet("{id:guid}")]
         public IActionResult BuscarPorId(Guid id)
         {
-            var usuarioLogadoId = Guid.Parse(User.FindFirstValue(ClaimTypes.NameIdentifier) ?? Guid.Empty.ToString());
-            var isAdmin = User.IsInRole("admin");
+            var logadoId = ObterUsuarioLogadoId();
+            var isAdmin  = User.IsInRole("admin");
 
-            if (!isAdmin && usuarioLogadoId != id)
+            if (!isAdmin && logadoId != id)
                 return Forbid();
 
-            var usuario = _db.Usuarios.FirstOrDefault(u => u.Id == id);
-            if (usuario == null) return NotFound(new { mensagem = "Cliente não encontrado." });
-
-            return Ok(AuthService.MapearUsuario(usuario));
+            var usuario = _clientesService.BuscarPorId(id);
+            return usuario is null
+                ? NotFound(new { mensagem = "Cliente não encontrado." })
+                : Ok(usuario);
         }
 
-        /// <summary>Atualiza perfil de um cliente (admin ou o próprio usuário)</summary>
         [HttpPut("{id:guid}")]
         public async Task<IActionResult> Atualizar(Guid id, [FromBody] AtualizarPerfilDto dto)
         {
-            var usuarioLogadoId = Guid.Parse(User.FindFirstValue(ClaimTypes.NameIdentifier) ?? Guid.Empty.ToString());
-            var isAdmin = User.IsInRole("admin");
+            var logadoId = ObterUsuarioLogadoId();
+            var isAdmin  = User.IsInRole("admin");
 
-            if (!isAdmin && usuarioLogadoId != id)
+            if (!isAdmin && logadoId != id)
                 return Forbid();
 
-            var usuario = _db.Usuarios.FirstOrDefault(u => u.Id == id);
-            if (usuario == null) return NotFound(new { mensagem = "Cliente não encontrado." });
-
-            if (dto.Nome != null) usuario.Nome = dto.Nome;
-            if (dto.Celular != null) usuario.Celular = dto.Celular;
-            if (dto.DataNascimento.HasValue) usuario.DataNascimento = dto.DataNascimento;
-
-            await _db.SaveChangesAsync();
-            return Ok(AuthService.MapearUsuario(usuario));
+            var resultado = await _clientesService.AtualizarAsync(id, dto);
+            return resultado is null
+                ? NotFound(new { mensagem = "Cliente não encontrado." })
+                : Ok(resultado);
         }
 
-        /// <summary>Remove (hard delete) um cliente (somente admin)</summary>
         [HttpDelete("{id:guid}")]
         [Authorize(Roles = "admin")]
         public async Task<IActionResult> Excluir(Guid id)
         {
-            var usuario = _db.Usuarios.FirstOrDefault(u => u.Id == id);
-            if (usuario == null) return NotFound(new { mensagem = "Usuário não encontrado." });
-
-            _db.Usuarios.Remove(usuario);
-            await _db.SaveChangesAsync();
-            
-            return NoContent();
+            var excluido = await _clientesService.ExcluirAsync(id);
+            return excluido ? NoContent() : NotFound(new { mensagem = "Usuário não encontrado." });
         }
 
-        /// <summary>Alterna o role de um usuário entre admin e client (somente admin)</summary>
         [HttpPatch("{id:guid}/role")]
         [Authorize(Roles = "admin")]
         public async Task<IActionResult> AlternarRole(Guid id)
         {
-            var usuarioLogadoId = Guid.Parse(User.FindFirstValue(ClaimTypes.NameIdentifier) ?? Guid.Empty.ToString());
+            var logadoId = ObterUsuarioLogadoId();
 
-            if (usuarioLogadoId == id)
-                return BadRequest(new { mensagem = "Você não pode alterar o seu próprio role." });
+            var resultado = await _clientesService.AlternarRoleAsync(logadoId, id);
+            return resultado is null
+                ? NotFound(new { mensagem = "Usuário não encontrado." })
+                : Ok(resultado);
+        }
 
-            var usuario = _db.Usuarios.FirstOrDefault(u => u.Id == id);
-            if (usuario == null) return NotFound(new { mensagem = "Usuário não encontrado." });
-
-            usuario.Role = usuario.Role == "admin" ? "client" : "admin";
-            await _db.SaveChangesAsync();
-
-            return Ok(AuthService.MapearUsuario(usuario));
+        private Guid ObterUsuarioLogadoId()
+        {
+            var raw = User.FindFirstValue(ClaimTypes.NameIdentifier);
+            return Guid.TryParse(raw, out var id) ? id : Guid.Empty;
         }
     }
 }
